@@ -1,7 +1,7 @@
 # Deadair alarm for WHRB
-This script was written by Hamish Nicholson (/koala) in June 2019
+This script was written by Hamish Nicholson (/koala) in June 2019.
 If it detects silence in any two consecutive 30 second blocks of the stream
-then it sends out an email to the important @whrb emails
+then it sends out an email to the important @whrb emails.
 Additionally the recovery email for the gmail used here is tech@whrb.org
 
 ##						WARNING!!!!
