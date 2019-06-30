@@ -43,9 +43,9 @@ def capture_stream(filename):
 
 def send_email():
 	# This function sends the deadair email to all relevent whrb emails
-	# it is send from whrb.deadairalarm@gmail.com
-	port = 465  # For SSL
-	password = '10000moHwv2d'
+	# it is sent from whrb.deadairalarm@gmail.com
+	port = 465
+	password = 'Your password here'
 	sender_email = "whrb.deadairalarm@gmail.com"
 	receiver_emails = ["tech@whrb.org", "gm@whrb.org", "pd@whrb.org", "president@whrb.org", "se@whrb.org"]
 	# Create a secure SSL context
