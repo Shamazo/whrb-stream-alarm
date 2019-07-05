@@ -14,5 +14,9 @@ This is to be used as one of many debugging/warning tools.
 
 ## Installation 
 This script requires pydub which also relies on ffmpeg.
-See the installation instructions here https://github.com/jiaaro/pydub
+See the installation instructions here https://github.com/jiaaro/pydub.
+I have installed this script on a raspberry pi and used systemd to ensure that
+it is run on start up. An example unit file is in this repository, this may need
+to be changed to suit your needs. A brief tutorial is method 4 of the following link
+https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/. 
 

@@ -45,7 +45,7 @@ def send_email():
 	# This function sends the deadair email to all relevent whrb emails
 	# it is sent from whrb.deadairalarm@gmail.com
 	port = 465
-	password = 'Your password here'
+	password = 'Your password here.'
 	sender_email = "whrb.deadairalarm@gmail.com"
 	receiver_emails = ["tech@whrb.org", "gm@whrb.org", "pd@whrb.org", "president@whrb.org", "se@whrb.org"]
 	# Create a secure SSL context
@@ -89,12 +89,13 @@ while True:
 		# only want to send an email at most every 30 minutes
 		if time.time() - email_last_sent > 1800:
 			send_email()
+			print('The stream appears to be broadcasting silence as of {0:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now())
 			email_last_sent = time.time()
 	if capture_segment.dBFS < -50.0:
 		prev_silent = True
 	else:
 		prev_silent = False
-	print("dbfs", capture_segment.dBFS)
+	# print("dbfs", capture_segment.dBFS)
 	os.remove("whrb_capture.mp3")
 
 
