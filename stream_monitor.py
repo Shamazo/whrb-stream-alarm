@@ -100,7 +100,7 @@ while True:
 	if capture_segment.dBFS < -55.0 and prev_silent == True:
 		# only want to send an email at most every 30 minutes
 		if time.time() - email_last_sent > 1800:
-			warning_message = """ The stream appears to be broadcasting silence as of {0:%Y-%m-%d %H:%M:%S}""".format(datetime.datetime.now())
+			warning_message = """WARNING: The stream appears to be broadcasting silence as of {0:%Y-%m-%d %H:%M:%S}""".format(datetime.datetime.now())
 			print(warning_message)
 			send_slack(warning_message)
 			email_last_sent = time.time()
@@ -108,7 +108,7 @@ while True:
 		prev_silent = True
 	else:
 		prev_silent = False
-	print("dbfs", capture_segment.dBFS)
+	print("INFO: dbfs", capture_segment.dBFS)
         try:
 	    os.remove("/tmp/whrb_capture.mp3")
         except:

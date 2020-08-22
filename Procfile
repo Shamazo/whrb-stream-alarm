@@ -1,0 +1,1 @@
+worker: python stream_monitor.py
