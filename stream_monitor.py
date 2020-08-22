@@ -15,15 +15,19 @@ This is to be used as one of many debugging/warning tools.
 
 import time
 import requests
+import os
+# this sets up th environment and is needed if being run by a daemon/starup process, not needed if running from an interactive shell
 from pydub import AudioSegment
-from pydub.silence import detect_silence
-import os 
 import smtplib, ssl
 import datetime
+import json
+# old imports for working with email below
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-
+# We get the slack webhook URL from an environment variable called SLACK_WEBHOOK
+# to set an environment variable on Linux/OSX use `export SLACK_WEBHOOK=<the web hook here>`
+slack_emergencies_url = os.environ['SLACK_WEBHOOK']
 
 
 
@@ -35,29 +39,36 @@ def capture_stream(filename):
 	with open(filename, 'wb') as f:
 	    for block in r.iter_content(1024):
 	        f.write(block)
-	        # roughly 30 seconds 350 
-	        if timer > 350:
+	        # roughly 30 seconds 350
+	        if timer > 1000:
 	        	break
 	        timer += 1
 
+def send_slack(text):
+	payload = {"text": text}
+	response = requests.post(slack_emergencies_url, data=json.dumps(
+        payload), headers={'Content-Type': 'application/json'})
+	print(response.text) #TEXT/HTML
+	print(response.status_code, response.reason)
 
+# depreciated, doesn't seem to work anymore, possibly google not liking our automated emails
 def send_email():
 	# This function sends the deadair email to all relevent whrb emails
 	# it is sent from whrb.deadairalarm@gmail.com
 	port = 465
-	password = 'Your password here.'
+	password = "Set password here"
 	sender_email = "whrb.deadairalarm@gmail.com"
 	receiver_emails = ["tech@whrb.org", "gm@whrb.org", "pd@whrb.org", "president@whrb.org", "se@whrb.org"]
 	# Create a secure SSL context
 	context = ssl.create_default_context()
 
 	message = MIMEMultipart("alternative")
-	message["Subject"] = "STREAM OFFAIR ALARIM"
+	message["Subject"] = "STREAM OFFAIR ALARM"
 	message["From"] = sender_email
 	message_text = """\
 	Subject: STREAM OFF AIR ALARM 
 
-	The steam appears to be broadcasting silence as of {0:%Y-%m-%d %H:%M:%S}
+	The stream appears to be broadcasting silence as of {0:%Y-%m-%d %H:%M:%S}
 
 	This message is an automated message sent from Python.""".format(datetime.datetime.now())
 
@@ -75,28 +86,35 @@ def send_email():
 		server.sendmail(sender_email, receiver_email, message.as_string())
 	server.quit()
 
-
+#send_slack("test message from the offair bot")
 prev_silent = False
 email_last_sent = time.time() - 1800
 
 
 # After a little bit of testing -50 dBFS seems reasonable. Mostly classical is in the -30 range
-# and goes down to -40 occasionally and absolute silence/static is -65. 
+# and goes down to -40 occasionally and absolute silence/static is -65.
 while True:
-	capture_stream("whrb_capture.mp3")
-	capture_segment = AudioSegment.from_mp3("whrb_capture.mp3")
-	if capture_segment.dBFS < -50.0 and prev_silent == True:
+    try:
+	capture_stream("/tmp/whrb_capture.mp3")
+	capture_segment = AudioSegment.from_mp3("/tmp/whrb_capture.mp3")
+	if capture_segment.dBFS < -55.0 and prev_silent == True:
 		# only want to send an email at most every 30 minutes
 		if time.time() - email_last_sent > 1800:
-			send_email()
-			print('The stream appears to be broadcasting silence as of {0:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now())
+			warning_message = """ The stream appears to be broadcasting silence as of {0:%Y-%m-%d %H:%M:%S}""".format(datetime.datetime.now())
+			print(warning_message)
+			send_slack(warning_message)
 			email_last_sent = time.time()
-	if capture_segment.dBFS < -50.0:
+	if capture_segment.dBFS < -55.0:
 		prev_silent = True
 	else:
 		prev_silent = False
-	# print("dbfs", capture_segment.dBFS)
-	os.remove("whrb_capture.mp3")
+	print("dbfs", capture_segment.dBFS)
+        try:
+	    os.remove("/tmp/whrb_capture.mp3")
+        except:
+            continue
+    except:
+        continue
 
 
 
