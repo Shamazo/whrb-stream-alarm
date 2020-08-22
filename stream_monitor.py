@@ -86,35 +86,51 @@ def send_email():
         server.sendmail(sender_email, receiver_email, message.as_string())
     server.quit()
 
-#send_slack("test message from the offair bot")
-prev_silent = False
-email_last_sent = time.time() - 1800
+
+if __name__ == "__main__":
+    print("starting whrb off air alarm")
+    #send_slack("test message from the offair bot")
+    prev_silent = False
+    prev_failed = False
+    email_last_sent = time.time() - 1800
 
 
-# After a little bit of testing -50 dBFS seems reasonable. Mostly classical is in the -30 range
-# and goes down to -40 occasionally and absolute silence/static is -65.
-while True:
-    try:
-        capture_stream("/tmp/whrb_capture.mp3")
-        capture_segment = AudioSegment.from_mp3("/tmp/whrb_capture.mp3")
-        if capture_segment.dBFS < -55.0 and prev_silent == True:
-            # only want to send an email at most every 30 minutes
+    # After a little bit of testing -50 dBFS seems reasonable. Mostly classical is in the -30 range
+    # and goes down to -40 occasionally and absolute silence/static is -65.
+    while True:
+        try:
+            capture_stream("/tmp/whrb_capture.mp3")
+            capture_segment = AudioSegment.from_mp3("/tmp/whrb_capture.mp3")
+            if capture_segment.dBFS < -55.0 and prev_silent == True:
+                # only want to send an email at most every 30 minutes
+                if time.time() - email_last_sent > 1800:
+                    warning_message = """WARNING: The stream appears to be broadcasting silence as of {0:%Y-%m-%d %H:%M:%S}""".format(datetime.datetime.now())
+                    print(warning_message)
+                    send_slack(warning_message)
+                    email_last_sent = time.time()
+            if capture_segment.dBFS < -55.0:
+                prev_silent = True
+            else:
+                prev_silent = False
+            print("INFO: dbfs", capture_segment.dBFS)
+            if prev_failed == True:
+                prev_failed = False
+            try:
+                os.remove("/tmp/whrb_capture.mp3")
+            except:
+                continue
+        except:
             if time.time() - email_last_sent > 1800:
-                warning_message = """WARNING: The stream appears to be broadcasting silence as of {0:%Y-%m-%d %H:%M:%S}""".format(datetime.datetime.now())
+                warning_message = """WARNING: Unable to connect to the stream as of {0:%Y-%m-%d %H:%M:%S}""".format(
+                    datetime.datetime.now())
                 print(warning_message)
                 send_slack(warning_message)
                 email_last_sent = time.time()
-        if capture_segment.dBFS < -55.0:
-            prev_silent = True
-        else:
-            prev_silent = False
-        print("INFO: dbfs", capture_segment.dBFS)
-        try:
-            os.remove("/tmp/whrb_capture.mp3")
-        except:
+            if prev_failed == True:
+                time.sleep(30)
+            prev_failed = True
+            print("Failed to capture stream, the stream may be down")
             continue
-    except:
-        continue
 
 
 
