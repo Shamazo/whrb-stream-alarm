@@ -45,11 +45,12 @@ def capture_stream(filename):
             timer += 1
 
 def send_slack(text):
+    print("sending slack message")
     payload = {"text": text}
     response = requests.post(slack_emergencies_url, data=json.dumps(
         payload), headers={'Content-Type': 'application/json'})
-    print(response.text) #TEXT/HTML
-    print(response.status_code, response.reason)
+    # print(response.text) #TEXT/HTML
+    # print(response.status_code, response.reason)
 
 # depreciated, doesn't seem to work anymore, possibly google not liking our automated emails
 def send_email():
@@ -113,6 +114,7 @@ if __name__ == "__main__":
             else:
                 prev_silent = False
             print("INFO: dbfs", capture_segment.dBFS)
+            # if we have gotten to here we haven't failed
             if prev_failed == True:
                 prev_failed = False
             try:
@@ -120,14 +122,15 @@ if __name__ == "__main__":
             except:
                 continue
         except:
-            if time.time() - email_last_sent > 1800:
+            # if we have failed twice in a row, there is probably a legitimate issue.
+            if time.time() - email_last_sent > 1800 and prev_failed == True:
                 warning_message = """WARNING: Unable to connect to the stream as of {0:%Y-%m-%d %H:%M:%S}""".format(
                     datetime.datetime.now())
                 print(warning_message)
                 send_slack(warning_message)
                 email_last_sent = time.time()
-            if prev_failed == True:
-                time.sleep(30)
+            # wait 30 seconds to try again
+            time.sleep(30)
             prev_failed = True
             print("Failed to capture stream, the stream may be down")
             continue
