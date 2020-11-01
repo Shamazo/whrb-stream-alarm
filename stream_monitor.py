@@ -25,7 +25,7 @@ import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# We get the slack webhook URL from an environment variable called SLACK_WEBHOOK
+# We get the slack webhook URL from an environment variable called SLACK_WEBHOOK, this is set on the Heroku dashboard
 # to set an environment variable on Linux/OSX use `export SLACK_WEBHOOK=<the web hook here>`
 slack_emergencies_url = os.environ['SLACK_WEBHOOK']
 
@@ -76,7 +76,7 @@ def send_email():
     part1 = MIMEText(message_text, "plain")
     message.attach(part1)
 
-    # for some reason googls smtp only worked without using the context
+    # for some reason googles smtp only worked without using the context
     # this is less secure, but it really doesn't matter who sees this message
     # context = ssl.create_default_context()
     server = smtplib.SMTP_SSL("smtp.gmail.com", port)
