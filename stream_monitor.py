@@ -52,7 +52,7 @@ def send_slack(text):
     # print(response.text) #TEXT/HTML
     # print(response.status_code, response.reason)
 
-# depreciated, doesn't seem to work anymore, possibly google not liking our automated emails
+# deprecated. Doesn't seem to work anymore, possibly google not liking our automated emails
 def send_email():
     # This function sends the deadair email to all relevent whrb emails
     # it is sent from whrb.deadairalarm@gmail.com
@@ -96,8 +96,8 @@ if __name__ == "__main__":
     email_last_sent = time.time() - 1800
 
 
-    # After a little bit of testing -50 dBFS seems reasonable. Mostly classical is in the -30 range
-    # and goes down to -40 occasionally and absolute silence/static is -65.
+    # After a little bit of testing -50 dBFS seems reasonable. Classical is mostly is in the -30 range
+    # and goes down to -40 occasionally. Absolute silence/static is -65.
     while True:
         try:
             capture_stream("/tmp/whrb_capture.mp3")
@@ -114,7 +114,7 @@ if __name__ == "__main__":
             else:
                 prev_silent = False
             print("INFO: dbfs", capture_segment.dBFS)
-            # if we have gotten to here we haven't failed
+            # if we have gotten to here we haven't failed. The stream is online and not silent
             if prev_failed == True:
                 prev_failed = False
             try:
